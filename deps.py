@@ -4,7 +4,7 @@ from attr import attrs as original_attrs, Factory
 import inject
 
 __all__ = ('attributes', 'attrs', 's', 'Interface')
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 class Interface:
@@ -17,7 +17,9 @@ def attrs(*args, **kwargs):
 
         for property_name, property_type in hints.items():
             if isinstance(property_type, type) and issubclass(property_type, Interface):
-                setattr(cls, property_name, Factory(lambda: inject.instance(property_type)))
+                def _factory(klass):
+                    return lambda: inject.instance(klass)
+                setattr(cls, property_name, Factory(_factory(property_type)))
 
         kwargs['auto_attribs'] = True
         return original_attrs(*args, **kwargs)(cls)
